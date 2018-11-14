@@ -266,3 +266,6 @@ __pycache__/
 # Terraform
 .terraform/
 terraform.state*
+
+# Environment
+.env
