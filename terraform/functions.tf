@@ -1,5 +1,5 @@
 resource "azurerm_storage_account" "functions_sample" {
-  name                     = "functionssamplestorage"
+  name                     = "${replace(lower(var.project_prefix),"-","")}storage"
   resource_group_name      = "${azurerm_resource_group.functions_sample.name}"
   location                 = "${azurerm_resource_group.functions_sample.location}"
   account_tier             = "Standard"
@@ -11,7 +11,7 @@ resource "azurerm_storage_account" "functions_sample" {
 }
 
 resource "azurerm_app_service_plan" "functions_sample" {
-  name                = "functions-sample-service-plan"
+  name                = "${var.project_prefix}-service-plan"
   resource_group_name = "${azurerm_resource_group.functions_sample.name}"
   location            = "${azurerm_resource_group.functions_sample.location}"
   kind                = "FunctionApp"
@@ -23,7 +23,7 @@ resource "azurerm_app_service_plan" "functions_sample" {
 }
 
 resource "azurerm_function_app" "functions_sample" {
-  name                      = "functions-sample-functions"
+  name                      = "${var.project_prefix}-functions"
   resource_group_name       = "${azurerm_resource_group.functions_sample.name}"
   location                  = "${azurerm_resource_group.functions_sample.location}"
   app_service_plan_id       = "${azurerm_app_service_plan.functions_sample.id}"
@@ -40,7 +40,7 @@ resource "azurerm_function_app" "functions_sample" {
 }
 
 resource "azurerm_application_insights" "functions_sample" {
-  name                = "functions_sample-insights"
+  name                = "${var.project_prefix}-insights"
   resource_group_name = "${azurerm_resource_group.functions_sample.name}"
   location            = "${var.sub_region}"
   application_type    = "Web"

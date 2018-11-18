@@ -9,3 +9,7 @@ variable "main_region" {
 variable "sub_region" {
   default = "southeastasia"
 }
+
+variable "project_prefix" {
+  default = "functions-sample"
+}
