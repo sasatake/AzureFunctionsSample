@@ -2,7 +2,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 
-namespace AzureFunctionsSample.src.shared
+namespace shared
 {
     public class Responses
     {
