@@ -16,6 +16,10 @@ resource "azurerm_app_service_plan" "functions_sample" {
   location            = "${azurerm_resource_group.functions_sample.location}"
   kind                = "FunctionApp"
 
+  tags {
+    environment = "${var.environment}"
+  }
+
   sku {
     tier = "Dynamic"
     size = "Y1"
@@ -44,4 +48,8 @@ resource "azurerm_application_insights" "functions_sample" {
   resource_group_name = "${azurerm_resource_group.functions_sample.name}"
   location            = "${var.sub_region}"
   application_type    = "Web"
+
+  tags {
+    environment = "${var.environment}"
+  }
 }
