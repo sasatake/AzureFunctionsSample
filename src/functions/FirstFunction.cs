@@ -1,6 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Net;
+using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
+using AzureFunctionsSample.src.shared;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
@@ -13,21 +18,19 @@ namespace AzureFunctionsSample
     public static class FirstFunction
     {
         [FunctionName ("FirstFunction")]
-        public static async Task<IActionResult> Run (
-            [HttpTrigger (AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
+        public static HttpResponseMessage Run (
+            [HttpTrigger (AuthorizationLevel.Function, "get", Route = null)] HttpRequest req,
             ILogger log)
         {
             log.LogInformation ("C# HTTP trigger function processed a request.");
 
             string name = req.Query["name"];
 
-            string requestBody = await new StreamReader (req.Body).ReadToEndAsync ();
-            dynamic data = JsonConvert.DeserializeObject (requestBody);
-            name = name ?? data?.name;
+            var myObj = new { name = name };
+            var jsonToReturn = JsonConvert.SerializeObject (myObj);
 
-            return name != null ?
-                (ActionResult) new OkObjectResult ($"Hello, {name}") :
-                new BadRequestObjectResult ("'name' パラメータをリクエストに含めてください.");
+            return (name != null && name != "") ? Responses.Success (jsonToReturn) : Responses.BadRequest ("Missing parameters");
         }
     }
+
 }
