@@ -2,7 +2,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 
-namespace shared
+namespace controller
 {
     public class Responses
     {
