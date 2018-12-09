@@ -12,15 +12,15 @@ namespace shared
 {
     public static class DocumentDBRepository<T> where T : class
     {
-        private static readonly string DatabaseId = Settings.Instance.database;
-        private static readonly string CollectionId = ConfigurationManager.AppSettings["collection"];
+        private static string databaseId;
+        private static string collectionId;
         private static DocumentClient client;
 
         public static async Task<T> GetItemAsync (string id)
         {
             try
             {
-                Document document = await client.ReadDocumentAsync (UriFactory.CreateDocumentUri (DatabaseId, CollectionId, id));
+                Document document = await client.ReadDocumentAsync (UriFactory.CreateDocumentUri (databaseId, collectionId, id));
                 return (T) (dynamic) document;
             }
             catch (DocumentClientException e)
@@ -36,10 +36,36 @@ namespace shared
             }
         }
 
+        public static async Task<IEnumerable<Document>> ReadDocumentFeedAsync ()
+        {
+            string continuation = string.Empty;
+            List<Document> results = new List<Document> ();
+            do
+            {
+
+                FeedResponse<dynamic> response = await client.ReadDocumentFeedAsync (UriFactory.CreateDocumentCollectionUri (databaseId, collectionId),
+                    new FeedOptions
+                    {
+                        MaxItemCount = 10, RequestContinuation = continuation
+                    });
+
+                foreach (var d in response)
+                {
+                    results.Add (d);
+                }
+
+                continuation = response.ResponseContinuation;
+
+            }
+            while (!string.IsNullOrEmpty (continuation));
+
+            return results;
+        }
+
         public static async Task<IEnumerable<T>> GetItemsAsync (Expression<Func<T, bool>> predicate)
         {
             IDocumentQuery<T> query = client.CreateDocumentQuery<T> (
-                    UriFactory.CreateDocumentCollectionUri (DatabaseId, CollectionId),
+                    UriFactory.CreateDocumentCollectionUri (databaseId, collectionId),
                     new FeedOptions { MaxItemCount = -1 })
                 .Where (predicate)
                 .AsDocumentQuery ();
@@ -55,22 +81,25 @@ namespace shared
 
         public static async Task<Document> CreateItemAsync (T item)
         {
-            return await client.CreateDocumentAsync (UriFactory.CreateDocumentCollectionUri (DatabaseId, CollectionId), item);
+            return await client.CreateDocumentAsync (UriFactory.CreateDocumentCollectionUri (databaseId, collectionId), item);
         }
 
         public static async Task<Document> UpdateItemAsync (string id, T item)
         {
-            return await client.ReplaceDocumentAsync (UriFactory.CreateDocumentUri (DatabaseId, CollectionId, id), item);
+            return await client.ReplaceDocumentAsync (UriFactory.CreateDocumentUri (databaseId, collectionId, id), item);
         }
 
         public static async Task DeleteItemAsync (string id)
         {
-            await client.DeleteDocumentAsync (UriFactory.CreateDocumentUri (DatabaseId, CollectionId, id));
+            await client.DeleteDocumentAsync (UriFactory.CreateDocumentUri (databaseId, collectionId, id));
         }
 
-        public static void Initialize ()
+        public static void Initialize (Configuration config)
         {
-            client = new DocumentClient (new Uri (ConfigurationManager.AppSettings["endpoint"]), ConfigurationManager.AppSettings["authKey"]);
+            client = new DocumentClient (new Uri (config.endpoint), config.authKey);
+            databaseId = config.databaseId;
+            collectionId = config.collectionId;
+
             CreateDatabaseIfNotExistsAsync ().Wait ();
             CreateCollectionIfNotExistsAsync ().Wait ();
         }
@@ -79,13 +108,13 @@ namespace shared
         {
             try
             {
-                await client.ReadDatabaseAsync (UriFactory.CreateDatabaseUri (DatabaseId));
+                await client.ReadDatabaseAsync (UriFactory.CreateDatabaseUri (databaseId));
             }
             catch (DocumentClientException e)
             {
                 if (e.StatusCode == System.Net.HttpStatusCode.NotFound)
                 {
-                    await client.CreateDatabaseAsync (new Database { Id = DatabaseId });
+                    await client.CreateDatabaseAsync (new Database { Id = databaseId });
                 }
                 else
                 {
@@ -98,16 +127,16 @@ namespace shared
         {
             try
             {
-                await client.ReadDocumentCollectionAsync (UriFactory.CreateDocumentCollectionUri (DatabaseId, CollectionId));
+                await client.ReadDocumentCollectionAsync (UriFactory.CreateDocumentCollectionUri (databaseId, collectionId));
             }
             catch (DocumentClientException e)
             {
                 if (e.StatusCode == System.Net.HttpStatusCode.NotFound)
                 {
                     await client.CreateDocumentCollectionAsync (
-                        UriFactory.CreateDatabaseUri (DatabaseId),
-                        new DocumentCollection { Id = CollectionId },
-                        new RequestOptions { OfferThroughput = 1000 });
+                        UriFactory.CreateDatabaseUri (databaseId),
+                        new DocumentCollection { Id = collectionId },
+                        new RequestOptions { OfferThroughput = 400 });
                 }
                 else
                 {
