@@ -22,7 +22,7 @@ namespace shared
                             .AddJsonFile ("local.settings.json", true)
                             .AddEnvironmentVariables ()
                             .Build ()
-                            .Bind ("test", Configuration);
+                            .Bind ("Values", Configuration);
                     }
                 }
 
@@ -34,6 +34,15 @@ namespace shared
 
     public class Configuration
     {
-        public string test { get; set; }
+        public string endpoint { get; set; }
+        public string authKey { get; set; }
+        public string databaseId { get; set; }
+        public string collectionId { get; set; }
+
+        public override string ToString ()
+        {
+            return new { endpoint = endpoint, authKey = authKey, databaseId = databaseId, collectionId = collectionId }.ToString ();
+        }
+
     }
 }
