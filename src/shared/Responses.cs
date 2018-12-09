@@ -17,6 +17,14 @@ namespace shared
             };
         }
 
+        public static HttpResponseMessage Created (string body)
+        {
+            return new HttpResponseMessage (HttpStatusCode.Created)
+            {
+                Content = new StringContent (body, Encoding.UTF8, contentType)
+            };
+        }
+
         public static HttpResponseMessage BadRequest (string body)
         {
             return new HttpResponseMessage (HttpStatusCode.BadRequest)

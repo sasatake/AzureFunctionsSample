@@ -13,6 +13,7 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using shared;
+using usecase;
 
 namespace controller
 {
@@ -28,21 +29,30 @@ namespace controller
         {
             init (context);
 
-            User user = new User ()
+            log.LogInformation (req.ContentType);
+
+            string requestBody = await new StreamReader (req.Body).ReadToEndAsync ();
+            dynamic data = null;
+            try
             {
-                Name = "test User",
-                Description = "first User"
-            };
+                data = JsonConvert.DeserializeObject (requestBody);
+            }
+            catch (JsonReaderException)
+            {
+                return Responses.BadRequest ("invalid Body");
+            }
 
-            var document = await DocumentDBRepository<User>.CreateItemAsync (user);
+            string name = data?.name;
+            string description = data?.description;
 
-            log.LogInformation (document.ToString ());
+            var request = new UserCreateRequest (name, description);
+            UserCreateResponse response = await new UserCreateUseCase ().execute (request);
 
-            return Responses.Success (document.ToString ());
+            return Responses.Created (JsonConvert.SerializeObject (response.User));
         }
 
         [FunctionName ("getUsers")]
-        public static async Task<HttpResponseMessage> Get (
+        public static async Task<HttpResponseMessage> GetList (
             [HttpTrigger (AuthorizationLevel.Function, "get", Route = "users")] HttpRequest req,
             ExecutionContext context,
             ILogger log)
