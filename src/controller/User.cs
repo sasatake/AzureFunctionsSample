@@ -14,14 +14,14 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using shared;
 
-namespace functions
+namespace controller
 {
     public class UserController
     {
         public static Configuration config;
 
         [FunctionName ("createUser")]
-        public static async Task<HttpResponseMessage> createUser (
+        public static async Task<HttpResponseMessage> Create (
             [HttpTrigger (AuthorizationLevel.Function, "post", Route = "users")] HttpRequest req,
             ExecutionContext context,
             ILogger log)
@@ -42,7 +42,7 @@ namespace functions
         }
 
         [FunctionName ("getUsers")]
-        public static async Task<HttpResponseMessage> getUsers (
+        public static async Task<HttpResponseMessage> Get (
             [HttpTrigger (AuthorizationLevel.Function, "get", Route = "users")] HttpRequest req,
             ExecutionContext context,
             ILogger log)
@@ -56,7 +56,7 @@ namespace functions
         }
 
         [FunctionName ("getUser")]
-        public static async Task<HttpResponseMessage> getUser (
+        public static async Task<HttpResponseMessage> Get (
             [HttpTrigger (AuthorizationLevel.Function, "get", Route = "users/{id}")] HttpRequest req,
             String id,
             ExecutionContext context,
