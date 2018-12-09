@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace models
 {
-
+    [JsonObject ("user")]
     public class User
     {
         [JsonProperty (PropertyName = "id")]
