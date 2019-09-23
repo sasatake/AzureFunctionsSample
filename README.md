@@ -22,36 +22,18 @@ az login
 sh setenv.sh
 ```
 
-## deploy from local
-
-- construct services and deploy source code.
-
-```
-sh deploy.sh init
-```
-
-- only construct services.
-
-```
-sh deploy.sh terraform
-```
-
-- destruct services.
-
-```
-sh deploy.sh rollback.
-```
-
-- only deploy source code.
-
-```
-sh deploy.sh
-```
-
 ## execute locally
 
 ```
 func host start
+```
+
+## deploy from local
+
+- deploy source code.
+
+```
+sh deploy.sh
 ```
 
 ## unit test

@@ -8,18 +8,6 @@ functions_name="${project_prefix}-functions"
 
 source .env
 
-function infra(){
-  echo "terraform"
-  terraform init terraform/ && \
-  terraform plan -var 'project_prefix='${project_prefix} terraform/ && \
-  terraform apply -state=./terraform/terraform.tfstate -var 'project_prefix='${project_prefix} -auto-approve terraform/
-}
-
-function rollback(){
-  echo "rollback"
-  terraform destroy -state=./terraform/terraform.tfstate -var 'project_prefix='${project_prefix} -auto-approve terraform/
-}
-
 function build(){
   echo "build"
   dotnet restore && dotnet publish -c Release -o ${publish_dir} && \
@@ -41,8 +29,5 @@ function deploy(){
 # main
 
 case "${1:-''}" in
-  "init") infra && build && deploy ;;
-  "terraform") infra ;;
-  "rollback") rollback ;;
   * ) build && deploy ;;
 esac
